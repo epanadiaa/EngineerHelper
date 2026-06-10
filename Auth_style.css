@@ -1,0 +1,145 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#002b66;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.container{
+    width:900px;
+    display:flex;
+    background:white;
+    border-radius:25px;
+    overflow:hidden;
+    box-shadow:0 5px 20px rgba(0,0,0,0.3);
+}
+
+.left-panel{
+    width:45%;
+    background:#001f4d;
+    color:white;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.left-panel h1{
+    font-size:50px;
+    margin-bottom:15px;
+}
+
+.left-panel p{
+    font-size:18px;
+    line-height:1.6;
+}
+
+.right-panel{
+    width:55%;
+    padding:50px;
+}
+
+.right-panel h2{
+    color:#002b66;
+    margin-bottom:25px;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:15px;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    background:#004aad;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+.btn:hover{
+    background:#003b8e;
+}
+
+.link{
+    text-align:center;
+    margin-top:15px;
+}
+
+.link a{
+    text-decoration:none;
+    color:#004aad;
+    font-weight:bold;
+}
+
+.message{
+    text-align:center;
+    color:green;
+    margin-bottom:15px;
+}
+
+.auth-links{
+    margin-top:20px;
+    text-align:center;
+}
+
+.auth-links a{
+    display:block;
+    margin-bottom:10px;
+    text-decoration:none;
+    color:#004aad;
+    font-weight:600;
+}
+
+.auth-links a:hover{
+    text-decoration:underline;
+}
+
+--Eye icon styles for password visibility toggle--
+/* Make sure your input-group sets a relative boundary */
+.input-group.password-container {
+    position: relative; 
+    display: flex;
+    align-items: center;
+    width: 100%; /* Or whatever width your username field uses */
+}
+
+/* Ensure the password input takes up the full width of the container */
+.password-container input {
+    width: 100%;
+    box-sizing: border-box; /* Keeps padding from breaking the width */
+    padding-right: 40px;    /* Leaves clear space so text won't hide under the eye */
+}
+
+/* Lock the eye icon inside the right edge of the password input */
+.eye-icon {
+    position: absolute;
+    right: 15px;       /* Pushes it slightly inward from the right border */
+    top: 50%;          /* Moves it down to the middle */
+    transform: translateY(-50%); /* Perfectly centers it vertically */
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.2rem;
+    z-index: 10;       /* Forces it to layer on top of the input box */
+}
