@@ -5,24 +5,19 @@ $message="";
 
 if(isset($_POST['register']))
 {
-    $username=$_POST['username'];
-    $role=$_POST['role'];
-    $position=$_POST['position'];
-    $email=$_POST['email'];
+    $username = trim($_POST['username']);
+    $role = trim($_POST['role']);
+    $position = trim($_POST['position']);
+    $email = trim($_POST['email']);
 
-    $password=password_hash($_POST['password'],
-    PASSWORD_DEFAULT);
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    $sql="INSERT INTO staff
-    (Username,Role,Position,Email,Password)
+    $stmt = $conn->prepare("INSERT INTO staff (Username, Role, Position, Email, Password) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param('sssss', $username, $role, $position, $email, $password);
 
-    VALUES
-    ('$username','$role','$position',
-    '$email','$password')";
-
-    if(mysqli_query($conn,$sql))
+    if($stmt->execute())
     {
-        $message="Staff Registered Successfully";
+        $message = "Staff Registered Successfully";
     }
 }
 ?>
@@ -99,7 +94,7 @@ Register Staff
 </form>
 
 <div class="link">
-<a href="login.php">
+<a href="UserLogin.php">
 Back to Login
 </a>
 </div>

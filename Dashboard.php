@@ -1,10 +1,12 @@
 <?php
-// 1. ALL PHP LOGIC GOES HERE AT THE VERY TOP
 session_start();
+include 'config.php';
 
-// Mock data for design purposes
-$_SESSION['user'] = "Irfah Nadiah"; 
-$_SESSION['role'] = "Admin";
+// Security check: Redirect to login if user isn't logged in
+if (!isset($_SESSION['username'])) {
+    header("Location: userlogin.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +17,7 @@ $_SESSION['role'] = "Admin";
     <title>Engineer Helper Dashboard</title>
     <style>
         body {
-            background: #002b5c; /* Solid dark blue background matching your reference */
+            background: #002b5c; 
             margin: 0;
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex; 
@@ -24,13 +26,12 @@ $_SESSION['role'] = "Admin";
             overflow: hidden;
         }
         
-        /* Top Header Navigation - Updated to match first pic */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 15px 40px;
-            background: rgba(0, 0, 0, 0.2); /* Subtle dark overlay for the header area */
+            background: rgba(0, 0, 0, 0.2); 
             color: white;
         }
 
@@ -55,14 +56,12 @@ $_SESSION['role'] = "Admin";
             letter-spacing: 1px;
         }
 
-        /* Main Container Layout */
         .layout-container {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* Sidebar Styling - White block on the left */
         .sidebar {
             width: 280px;
             background: white;
@@ -97,7 +96,7 @@ $_SESSION['role'] = "Admin";
             font-weight: bold;
             margin-bottom: 25px;
             text-transform: uppercase;
-            color: #d1d1d1; /* Faded gray for inactive */
+            color: #d1d1d1; 
             transition: color 0.3s ease;
         }
 
@@ -108,14 +107,13 @@ $_SESSION['role'] = "Admin";
         }
 
         .sidebar li.active { 
-            color: #003366; /* Dark blue for active */
+            color: #003366; 
         }
 
         .sidebar li:hover {
             color: #003366;
         }
 
-        /* Content Area Styling (Dark Blue Area) */
         .content-area {
             flex: 1;
             padding: 40px 50px;
@@ -124,7 +122,6 @@ $_SESSION['role'] = "Admin";
             box-sizing: border-box;
         }
 
-        /* Search Bar Placeholder */
         .search-container {
             display: flex;
             align-items: center;
@@ -145,7 +142,6 @@ $_SESSION['role'] = "Admin";
             outline: none;
         }
 
-        /* Main White Card inside the Blue Area */
         .card {
             background: white;
             border-radius: 45px; 
@@ -173,7 +169,7 @@ $_SESSION['role'] = "Admin";
     <header class="header">
         <h1>Engineer Helper</h1>
         <div class="nav-links">
-            <a href="Dashboard.php">HOME</a>
+            <a href="dashboard.php">HOME</a>
             <a href="#">ABOUT</a>
             <a href="logout.php">LOG OUT</a>
         </div>
@@ -181,11 +177,11 @@ $_SESSION['role'] = "Admin";
 
     <div class="layout-container">
         <div class="sidebar">
-            <h2>Hi, <?php echo htmlspecialchars($_SESSION['user']); ?>!</h2>
+            <h2>Hi, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <div class="page-title">Project Dashboard</div>
             
             <ul>
-                <li class="active"><a href="Dashboard.php">Project Dashboard</a></li>
+                <li class="active"><a href="dashboard.php">Project Dashboard</a></li>
                 <li><a href="ProjectProgress.php">Project Progress</a></li>
                 <li><a href="UploadReport.php">Upload Report</a></li>
                 <li><a href="BOQCalculation.php">BOQ Calculation</a></li>

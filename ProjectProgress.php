@@ -1,7 +1,11 @@
 <?php
 session_start();
-// Mock data for design consistency
-$_SESSION['user'] = "Irfah Nadiah"; 
+include 'config.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: UserLogin.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +17,7 @@ $_SESSION['user'] = "Irfah Nadiah";
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background: #002b5c; /* Solid dark blue matching reference */
+            background: #002b5c; 
             margin: 0;
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
@@ -22,7 +26,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             overflow: hidden;
         }
 
-        /* Top Header Navigation */
         .header {
             display: flex;
             justify-content: space-between;
@@ -53,14 +56,12 @@ $_SESSION['user'] = "Irfah Nadiah";
             letter-spacing: 1px;
         }
 
-        /* Main Layout Body */
         .layout-container {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* White Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -98,7 +99,6 @@ $_SESSION['user'] = "Irfah Nadiah";
         .sidebar li.active { color: #003366; }
         .sidebar li:hover { color: #003366; }
 
-        /* Content Area */
         .content-area {
             flex: 1;
             padding: 40px 50px;
@@ -108,7 +108,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             overflow-y: auto;
         }
 
-        /* Search Bar */
         .search-container {
             display: flex;
             align-items: center;
@@ -130,7 +129,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             outline: none;
         }
 
-        /* Chart Cards */
         .card {
             background: white;
             border-radius: 45px; 
@@ -153,7 +151,7 @@ $_SESSION['user'] = "Irfah Nadiah";
     <header class="header">
         <h1>Engineer Helper</h1>
         <div class="nav-links">
-            <a href="Dashboard.php">HOME</a>
+            <a href="DashboardEngineer.php">HOME</a>
             <a href="#">ABOUT</a>
             <a href="logout.php">LOG OUT</a>
         </div>
@@ -161,14 +159,14 @@ $_SESSION['user'] = "Irfah Nadiah";
 
     <div class="layout-container">
         <aside class="sidebar">
-            <h2>Hi, <?php echo htmlspecialchars($_SESSION['user']); ?>!</h2>
+            <h2>Hi, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <div class="page-title">Project Progress</div>
             <ul>
-                <li><a href="Dashboard.php">Project Dashboard</a></li>
+                <li><a href="DashboardEngineer.php">Project Dashboard</a></li>
                 <li class="active"><a href="ProjectProgress.php">Project Progress</a></li>
+                <li><a href="ProjectDetails.php">Project Details</a></li>
                 <li><a href="UploadReport.php">Upload Report</a></li>
                 <li><a href="BOQCalculation.php">BOQ Calculation</a></li>
-                <li><a href="ProjectDetails.php">Project Details</a></li>
                 <li><a href="AddWorkingHours.php">Add Working Hours</a></li>
             </ul>
         </aside>
@@ -196,7 +194,6 @@ $_SESSION['user'] = "Irfah Nadiah";
     </div>
 
     <script>
-        // Data for Pie Chart
         const ctx1 = document.getElementById('statusChart').getContext('2d');
         new Chart(ctx1, {
             type: 'pie',
@@ -210,7 +207,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             options: { maintainAspectRatio: false }
         });
 
-        // Data for Bar Chart
         const ctx2 = document.getElementById('timelineChart').getContext('2d');
         new Chart(ctx2, {
             type: 'bar',

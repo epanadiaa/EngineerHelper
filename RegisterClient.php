@@ -1,43 +1,88 @@
 <?php
 include 'config.php';
 
-$message="";
+$message = "";
 
 if(isset($_POST['register']))
 {
-    $person=$_POST['person'];
-    $company=$_POST['company'];
-    $phone=$_POST['phone'];
-    $address=$_POST['address'];
-    $email=$_POST['email'];
+    $person = trim($_POST['person']);
+    $company = trim($_POST['company']);
+    $phone = trim($_POST['phone']);
+    $address = trim($_POST['address']);
+    $email = trim($_POST['email']);
 
-    $username=$_POST['username'];
-    $password=password_hash($_POST['password'],PASSWORD_DEFAULT);
+    $username = trim($_POST['username']);
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    mysqli_query($conn,
-    "INSERT INTO client
-    (PersonInCharge,ClientCompany,
-    ClientPhoneNum,ClientAddress,ClientEmail)
+    /* =========================
+       CHECK USERNAME EXISTS
+    ========================== */
+    $stmt = $conn->prepare("SELECT 1 FROM client_account WHERE Username = ?");
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    $stmt->store_result();
 
-    VALUES
-    ('$person','$company','$phone',
-    '$address','$email')");
+    if($stmt->num_rows > 0)
+    {
+        $message = "Username already exists.";
+        $stmt->close();
+    }
+    else
+    {
+        $stmt->close();
 
-    $clientID=mysqli_insert_id($conn);
+        /* =========================
+           CHECK EMAIL EXISTS
+        ========================== */
+        $stmt = $conn->prepare("SELECT 1 FROM client WHERE ClientEmail = ?");
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $stmt->store_result();
 
-    mysqli_query($conn,
-    "INSERT INTO client_account
-    (ClientID,Username,Password)
+        if($stmt->num_rows > 0)
+        {
+            $message = "Email already registered.";
+            $stmt->close();
+        }
+        else
+        {
+            $stmt->close();
 
-    VALUES
-    ('$clientID','$username','$password')");
+            /* =========================
+               INSERT CLIENT INFO
+            ========================== */
+            $stmt = $conn->prepare("
+                INSERT INTO client 
+                (PersonInCharge, ClientCompany, ClientPhoneNum, ClientAddress, ClientEmail)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmt->bind_param('sssss', $person, $company, $phone, $address, $email);
+            $stmt->execute();
 
-    $message="Registration Successful";
+            $clientID = $conn->insert_id;
+            $stmt->close();
+
+            /* =========================
+               INSERT CLIENT ACCOUNT
+            ========================== */
+            $stmt = $conn->prepare("
+                INSERT INTO client_account (ClientID, Username, Password)
+                VALUES (?, ?, ?)
+            ");
+            $stmt->bind_param('iss', $clientID, $username, $password);
+            $stmt->execute();
+
+            $stmt->close();
+
+            $message = "Registration Successful!";
+        }
+    }
 }
 ?>
 
 <!DOCTYPE html>
 <html>
+
 <head>
 <title>Client Registration</title>
 <link rel="stylesheet" href="Auth_style.css">
@@ -56,9 +101,11 @@ if(isset($_POST['register']))
 
 <h2>Client Registration</h2>
 
+<?php if(!empty($message)): ?>
 <div class="message">
 <?php echo $message; ?>
 </div>
+<?php endif; ?>
 
 <form method="POST">
 
@@ -86,8 +133,9 @@ if(isset($_POST['register']))
 <input type="text" name="username" placeholder="Username" required>
 </div>
 
-<div class="input-group">
-<input type="password" name="password" placeholder="Password" required>
+<div class="input-group password-container">
+<input type="password" name="password" id="password" placeholder="Password" required>
+<span id="togglePassword" class="eye-icon">👁️</span>
 </div>
 
 <button class="btn" type="submit" name="register">
@@ -97,11 +145,22 @@ Register
 </form>
 
 <div class="link">
-<a href="login.php">Back to Login</a>
+<a href="UserLogin.php">Back to Login</a>
 </div>
 
 </div>
 </div>
+
+<script>
+const togglePassword = document.querySelector('#togglePassword');
+const password = document.querySelector('#password');
+
+togglePassword.addEventListener('click', function () {
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+    this.textContent = type === 'password' ? '👁️' : '🙈';
+});
+</script>
 
 </body>
 </html>

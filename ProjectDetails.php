@@ -1,7 +1,11 @@
 <?php
 session_start();
-// Mock data for design consistency
-$_SESSION['user'] = "Irfah Nadiah"; 
+include 'config.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: UserLogin.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -12,7 +16,7 @@ $_SESSION['user'] = "Irfah Nadiah";
     <title>Project Details - Engineer Helper</title>
     <style>
         body {
-            background: #002b5c; /* Solid dark blue matching reference */
+            background: #002b5c; 
             margin: 0;
             font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
@@ -21,7 +25,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             overflow: hidden;
         }
 
-        /* Top Header Navigation */
         .header {
             display: flex;
             justify-content: space-between;
@@ -52,14 +55,12 @@ $_SESSION['user'] = "Irfah Nadiah";
             letter-spacing: 1px;
         }
 
-        /* Main Layout Body */
         .layout-container {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* White Sidebar */
         .sidebar {
             width: 280px;
             background: white;
@@ -97,7 +98,6 @@ $_SESSION['user'] = "Irfah Nadiah";
         .sidebar li.active { color: #003366; }
         .sidebar li:hover { color: #003366; }
 
-        /* Content Area (Dark Blue part) */
         .content-area {
             flex: 1;
             padding: 40px 50px;
@@ -106,7 +106,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             box-sizing: border-box;
         }
 
-        /* Search Bar */
         .search-container {
             display: flex;
             align-items: center;
@@ -127,7 +126,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             outline: none;
         }
 
-        /* Main White Card Area */
         .card {
             background: white;
             border-radius: 45px; 
@@ -191,7 +189,7 @@ $_SESSION['user'] = "Irfah Nadiah";
     <header class="header">
         <h1>Engineer Helper</h1>
         <div class="nav-links">
-            <a href="Dashboard.php">HOME</a>
+            <a href="dashboard.php">HOME</a>
             <a href="#">ABOUT</a>
             <a href="logout.php">LOG OUT</a>
         </div>
@@ -199,10 +197,10 @@ $_SESSION['user'] = "Irfah Nadiah";
 
     <div class="layout-container">
         <aside class="sidebar">
-            <h2>Hi, <?php echo htmlspecialchars($_SESSION['user']); ?>!</h2>
+            <h2>Hi, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
             <div class="page-title">Project Details</div>
             <ul>
-                <li><a href="Dashboard.php">Project Dashboard</a></li>
+                <li><a href="dashboard.php">Project Dashboard</a></li>
                 <li><a href="ProjectProgress.php">Project Progress</a></li>
                 <li><a href="UploadReport.php">Upload Report</a></li>
                 <li><a href="BOQCalculation.php">BOQ Calculation</a></li>

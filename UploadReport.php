@@ -1,7 +1,11 @@
 <?php
 session_start();
-// Mock data for the session
-$_SESSION['user'] = "Irfah Nadiah"; 
+include 'config.php';
+
+if (!isset($_SESSION['username'])) {
+    header("Location: UserLogin.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,7 +22,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             height: 100vh;
         }
         
-        /* Sidebar matches your Dashboard and Progress pages */
         .sidebar {
             width: 25%;
             background: white;
@@ -42,7 +45,6 @@ $_SESSION['user'] = "Irfah Nadiah";
             padding: 40px;
         }
 
-        /* The white card with rounded corners from your sketch */
         .card {
             background: white;
             border-radius: 40px; 
@@ -83,9 +85,9 @@ $_SESSION['user'] = "Irfah Nadiah";
 
     <div class="sidebar">
         <h2>Engineer Helper</h2>
-        <p>welcome, <?php echo $_SESSION['user']; ?>.</p>
+        <p>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>.</p>
         <ul>
-            <li><a href="Dashboard.php">Project Dashboard</a></li>
+            <li><a href="dashboard.php">Project Dashboard</a></li>
             <li><a href="ProjectProgress.php">Project Progress</a></li>
             <li class="active"><a href="UploadReport.php">Upload Report</a></li>
             <li><a href="BOQCalculation.php">BOQ Calculation</a></li>
