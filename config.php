@@ -1,14 +1,16 @@
 <?php
 
-$conn = mysqli_connect(
-    "localhost",
-    "root",
-    "",
-    "engineerhelperdb"
-);
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "engineerhelperdb";
+
+$conn = mysqli_connect($host, $username, $password, $database);
 
 if (!$conn) {
     die("Connection Failed: " . mysqli_connect_error());
 }
+
+mysqli_set_charset($conn, "utf8mb4");
 
 ?>

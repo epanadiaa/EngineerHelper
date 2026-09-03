@@ -6,6 +6,11 @@
 }
 
 body{
+    background-image: url('images/Loginpage.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     background:#002b66;
     min-height:100vh;
     display:flex;

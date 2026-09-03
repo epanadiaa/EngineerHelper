@@ -5,7 +5,8 @@ $message = "";
 
 if(isset($_POST['reset']))
 {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
     $newPassword = $_POST['newPassword'];
     $confirmPassword = $_POST['confirmPassword'];
 
@@ -13,44 +14,56 @@ if(isset($_POST['reset']))
     {
         $message = "Passwords do not match.";
     }
+    elseif(strlen($newPassword) < 8)
+    {
+        $message = "Password must be at least 8 characters.";
+    }
     else
     {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        $resetDone = false;
 
-        // STAFF
-        $staffCheck = mysqli_query($conn,
-        "SELECT * FROM staff WHERE Username='$username'");
+        // STAFF - username AND registered email must both match
+        $stmt = $conn->prepare("SELECT StaffID FROM staff WHERE Username = ? AND Email = ?");
+        $stmt->bind_param('ss', $username, $email);
+        $stmt->execute();
+        $staffResult = $stmt->get_result();
 
-        if(mysqli_num_rows($staffCheck) > 0)
+        if($staffResult->fetch_assoc())
         {
-            mysqli_query($conn,
-            "UPDATE staff
-            SET Password='$hashedPassword'
-            WHERE Username='$username'");
-
-            $message = "Password reset successfully!";
+            $update = $conn->prepare("UPDATE staff SET Password = ? WHERE Username = ?");
+            $update->bind_param('ss', $hashedPassword, $username);
+            $update->execute();
+            $resetDone = true;
         }
-        else
+        $stmt->close();
+
+        // CLIENT - username AND the email on the linked client record must both match
+        if(!$resetDone)
         {
-            // CLIENT
-            $clientCheck = mysqli_query($conn,
-            "SELECT * FROM client_account
-            WHERE Username='$username'");
+            $stmt = $conn->prepare(
+                "SELECT ca.ClientAccountID FROM client_account ca
+                 JOIN client c ON c.ClientID = ca.ClientID
+                 WHERE ca.Username = ? AND c.ClientEmail = ?"
+            );
+            $stmt->bind_param('ss', $username, $email);
+            $stmt->execute();
+            $clientResult = $stmt->get_result();
 
-            if(mysqli_num_rows($clientCheck) > 0)
+            if($clientResult->fetch_assoc())
             {
-                mysqli_query($conn,
-                "UPDATE client_account
-                SET Password='$hashedPassword'
-                WHERE Username='$username'");
-
-                $message = "Password reset successfully!";
+                $update = $conn->prepare("UPDATE client_account SET Password = ? WHERE Username = ?");
+                $update->bind_param('ss', $hashedPassword, $username);
+                $update->execute();
+                $resetDone = true;
             }
-            else
-            {
-                $message = "Username not found.";
-            }
+            $stmt->close();
         }
+
+        // Same message either way - don't reveal whether the username/email exists
+        $message = $resetDone
+            ? "Password reset successfully!"
+            : "We couldn't verify those details. Please check your username and registered email.";
     }
 }
 ?>
@@ -84,6 +97,13 @@ if(isset($_POST['reset']))
             <input type="text"
                    name="username"
                    placeholder="Username"
+                   required>
+        </div>
+
+        <div class="input-group">
+            <input type="email"
+                   name="email"
+                   placeholder="Registered Email"
                    required>
         </div>
 

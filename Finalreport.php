@@ -18,53 +18,33 @@ $staffID = $staff['StaffID'];
 
 $message = "";
 
-if(isset($_POST['upload']))
+if(isset($_POST['save_report']))
 {
     $projectID = $_POST['projectID'];
+    $projectManager = mysqli_real_escape_string($conn, $_POST['projectManager']);
+    $contractor = mysqli_real_escape_string($conn, $_POST['contractor']);
+    $objective = mysqli_real_escape_string($conn, $_POST['objective']);
+    $originalBudget = $_POST['originalBudget'];
+    $finalCost = $_POST['finalCost'];
+    $costVariance = mysqli_real_escape_string($conn, $_POST['costVariance']);
+    $planningDesign = mysqli_real_escape_string($conn, $_POST['planningDesign']);
+    $inspectionTesting = mysqli_real_escape_string($conn, $_POST['inspectionTesting']);
 
-    if(isset($_FILES['report']) && $_FILES['report']['error'] == 0)
+    $insert = mysqli_query($conn,
+    "INSERT INTO final_report
+    (ProjectID, StaffID, ProjectManager, Contractor, Objective,
+     OriginalBudget, FinalCost, CostVariance, PlanningDesign, InspectionTesting)
+    VALUES
+    ('$projectID', '$staffID', '$projectManager', '$contractor', '$objective',
+     '$originalBudget', '$finalCost', '$costVariance', '$planningDesign', '$inspectionTesting')");
+
+    if($insert)
     {
-        $fileName = $_FILES['report']['name'];
-        $fileTmp = $_FILES['report']['tmp_name'];
-        $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-        $allowed = ['pdf','doc','docx'];
-
-        if(in_array($fileType, $allowed))
-        {
-            $folder = "uploads/FinalReport/";
-
-            if(!is_dir($folder))
-            {
-                mkdir($folder, 0777, true);
-            }
-
-            $newFileName = time().'_'.basename($fileName);
-            $uploadPath = $folder.$newFileName;
-
-            if(move_uploaded_file($fileTmp, $uploadPath))
-            {
-                mysqli_query($conn,
-                "INSERT INTO project_document
-                (P_DocName, P_FileType, P_UploadDate, ProjectID, P_FilePath)
-                VALUES
-                ('Final Report', '$fileType', NOW(), '$projectID', '$uploadPath')");
-
-                $message = "Final Report uploaded successfully.";
-            }
-            else
-            {
-                $message = "File upload failed. Please try again.";
-            }
-        }
-        else
-        {
-            $message = "Only PDF, DOC and DOCX files are allowed.";
-        }
+        $message = "Final report saved successfully.";
     }
     else
     {
-        $message = "Please select a report file.";
+        $message = "Error saving final report: " . mysqli_error($conn);
     }
 }
 ?>
@@ -72,7 +52,7 @@ if(isset($_POST['upload']))
 <!DOCTYPE html>
 <html>
 <head>
-<title>Upload Final Report</title>
+<title>Final Report</title>
 
 <style>
 body{
@@ -177,24 +157,40 @@ body{
     margin-top:0;
 }
 
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:15px;
+}
+
 .form-group{
     margin-bottom:15px;
 }
 
-.form-group label{
-    display:block;
+.form-group.full{
+    grid-column:span 2;
+}
+
+label{
     font-weight:bold;
     color:#003366;
+    display:block;
     margin-bottom:5px;
 }
 
-.form-group input,
-.form-group select{
+input,
+select,
+textarea{
     width:100%;
     padding:12px;
     border:1px solid #ccc;
     border-radius:10px;
     box-sizing:border-box;
+}
+
+textarea{
+    height:120px;
+    resize:vertical;
 }
 
 .btn{
@@ -205,6 +201,8 @@ body{
     border-radius:10px;
     cursor:pointer;
     font-weight:bold;
+    text-decoration:none;
+    display:inline-block;
 }
 
 .btn:hover{
@@ -245,7 +243,7 @@ td{
     border-bottom:1px solid #ddd;
 }
 
-.download-btn{
+.view-btn{
     background:#28a745;
     color:white;
     padding:8px 12px;
@@ -274,15 +272,15 @@ td{
 <h2>Hi, <?php echo htmlspecialchars($username); ?>!</h2>
 
 <div class="page-title">
-UPLOAD<br>REPORT
+FINAL REPORT
 </div>
 
 <ul>
 <li><a href="DashboardEngineer.php">Project Dashboard</a></li>
 <li><a href="ProjectProgress.php">Project Progress</a></li>
 <li><a href="ProjectDetails.php">Project Details</a></li>
-<li class="active"><a href="UploadReport.php">Upload Report</a></li>
-<li><a href="Finalreport.php">Report Generator</a></li>
+<li><a href="UploadReport.php">Upload Report</a></li>
+<li class="active"><a href="FinalReport.php">Report Generator</a></li>
 <li><a href="AddWorkingHours.php">Add Working Hours</a></li>
 </ul>
 
@@ -292,17 +290,15 @@ UPLOAD<br>REPORT
 
 <div class="card">
 
-<h2>Upload Final Report</h2>
+<h2>Create Final Report</h2>
 
-<?php
-if($message != "")
-{
-    $class = (strpos($message, "successfully") !== false) ? "success" : "error";
-    echo "<div class='$class'>$message</div>";
-}
-?>
+<?php if($message != "") { ?>
+<div class="<?php echo (strpos($message, 'successfully') !== false) ? 'success' : 'error'; ?>">
+<?php echo $message; ?>
+</div>
+<?php } ?>
 
-<form method="POST" enctype="multipart/form-data">
+<form method="POST">
 
 <div class="form-group">
 <label>Select Assigned Project</label>
@@ -311,7 +307,7 @@ if($message != "")
 <option value="">-- Select Project --</option>
 
 <?php
-$projectQuery = mysqli_query($conn,
+$projects = mysqli_query($conn,
 "SELECT DISTINCT p.*
  FROM project p
  LEFT JOIN project_assignment pa
@@ -320,26 +316,60 @@ $projectQuery = mysqli_query($conn,
  OR p.StaffID='$staffID'
  ORDER BY p.ProjectName ASC");
 
-while($project = mysqli_fetch_assoc($projectQuery))
-{
+while($p = mysqli_fetch_assoc($projects)) {
+    echo "<option value='".$p['ProjectID']."'>".htmlspecialchars($p['ProjectName'])."</option>";
+}
 ?>
-
-<option value="<?php echo $project['ProjectID']; ?>">
-<?php echo htmlspecialchars($project['ProjectName']); ?>
-</option>
-
-<?php } ?>
 
 </select>
 </div>
 
+<div class="form-grid">
+
 <div class="form-group">
-<label>Final Report File</label>
-<input type="file" name="report" accept=".pdf,.doc,.docx" required>
+<label>Project Manager</label>
+<input type="text" name="projectManager" required>
 </div>
 
-<button class="btn" type="submit" name="upload">
-Upload Report
+<div class="form-group">
+<label>Contractor</label>
+<input type="text" name="contractor" required>
+</div>
+
+<div class="form-group">
+<label>Original Budget (RM)</label>
+<input type="number" step="0.01" name="originalBudget" required>
+</div>
+
+<div class="form-group">
+<label>Final Cost (RM)</label>
+<input type="number" step="0.01" name="finalCost" required>
+</div>
+
+<div class="form-group full">
+<label>Objective</label>
+<textarea name="objective" required></textarea>
+</div>
+
+<div class="form-group full">
+<label>Cost Variance</label>
+<textarea name="costVariance" required></textarea>
+</div>
+
+<div class="form-group full">
+<label>Planning and Design</label>
+<textarea name="planningDesign" required></textarea>
+</div>
+
+<div class="form-group full">
+<label>Inspection and Testing</label>
+<textarea name="inspectionTesting" required></textarea>
+</div>
+
+</div>
+
+<button type="submit" name="save_report" class="btn">
+Save Final Report
 </button>
 
 </form>
@@ -348,61 +378,47 @@ Upload Report
 
 <div class="card">
 
-<h2>Uploaded Reports</h2>
+<h2>Saved Final Reports</h2>
 
 <table>
 <tr>
 <th>Project</th>
-<th>File Type</th>
-<th>Upload Date</th>
-<th>File</th>
+<th>Generated Date</th>
+<th>Original Budget</th>
+<th>Final Cost</th>
+<th>Action</th>
 </tr>
 
 <?php
-$reportQuery = mysqli_query($conn,
-"SELECT
-    d.*,
-    p.ProjectName
- FROM project_document d
- INNER JOIN project p
- ON d.ProjectID = p.ProjectID
- LEFT JOIN project_assignment pa
- ON p.ProjectID = pa.ProjectID
- WHERE d.P_DocName='Final Report'
- AND (pa.StaffID='$staffID' OR p.StaffID='$staffID')
- ORDER BY d.P_UploadDate DESC");
+$reports = mysqli_query($conn,
+"SELECT fr.*, p.ProjectName
+ FROM final_report fr
+ INNER JOIN project p ON fr.ProjectID = p.ProjectID
+ WHERE fr.StaffID='$staffID'
+ ORDER BY fr.GeneratedDate DESC");
 
-if(mysqli_num_rows($reportQuery) > 0)
-{
-    while($row = mysqli_fetch_assoc($reportQuery))
-    {
+if(mysqli_num_rows($reports) > 0) {
+    while($r = mysqli_fetch_assoc($reports)) {
 ?>
 
 <tr>
-<td><?php echo htmlspecialchars($row['ProjectName']); ?></td>
-<td><?php echo strtoupper($row['P_FileType']); ?></td>
-<td><?php echo $row['P_UploadDate']; ?></td>
+<td><?php echo htmlspecialchars($r['ProjectName']); ?></td>
+<td><?php echo $r['GeneratedDate']; ?></td>
+<td>RM <?php echo number_format($r['OriginalBudget'],2); ?></td>
+<td>RM <?php echo number_format($r['FinalCost'],2); ?></td>
 <td>
-<a class="download-btn" href="<?php echo $row['P_FilePath']; ?>" target="_blank">
-Download
+<a class="view-btn" href="ViewFinalReport.php?id=<?php echo $r['ReportID']; ?>" target="_blank">
+View Report
 </a>
 </td>
 </tr>
 
 <?php
     }
+} else {
+    echo "<tr><td colspan='5' style='text-align:center;'>No final report saved yet.</td></tr>";
 }
-else
-{
 ?>
-
-<tr>
-<td colspan="4" style="text-align:center;">
-No final report uploaded yet.
-</td>
-</tr>
-
-<?php } ?>
 
 </table>
 

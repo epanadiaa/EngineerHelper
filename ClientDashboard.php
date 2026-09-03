@@ -72,7 +72,7 @@ ORDER BY ProjectID DESC");
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:'Poppins',sans-serif;
+font-family:'Segoe UI',Arial,sans-serif;
 }
 
 body{
@@ -110,7 +110,9 @@ margin:20px 0;
 .sidebar ul li a{
 color:white;
 text-decoration:none;
-font-size:16px;
+font-size:1.15rem;
+font-weight:800;
+text-transform:uppercase;
 display:block;
 padding:10px;
 border-radius:10px;
@@ -249,37 +251,37 @@ Engineer Helper
 
 <li>
 <a href="ClientDashboard.php">
-🏠 Dashboard
+ Dashboard
 </a>
 </li>
 
 <li>
 <a href="ClientProjectDetails.php">
-📁 Project Details
+ Project Details
 </a>
 </li>
 
 <li>
 <a href="ClientUploadBOQ.php">
-📤 Upload BOQ
+ Upload BOQ
 </a>
 </li>
 
 <li>
 <a href="ClientDownloadReport.php">
-📄 Download Report
+ Download Report
 </a>
 </li>
 
 <li>
 <a href="ClientProfile.php">
-👤 Profile
+ Profile
 </a>
 </li>
 
 <li>
-<a href="Logout.php">
-🚪 Logout
+<a href="LogOut.php">
+ Logout
 </a>
 </li>
 

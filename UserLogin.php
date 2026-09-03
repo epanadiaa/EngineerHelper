@@ -7,7 +7,7 @@ $message = "";
 if(isset($_POST['login']))
 {
     $username = trim($_POST['username']);
-    $password = $_POST['password'];
+    $password = $_POST['password']; // Matches the lowercase name="password" in HTML form
 
     /* =======================
        STAFF LOGIN CHECK
@@ -19,6 +19,7 @@ if(isset($_POST['login']))
 
     if($row = $staffResult->fetch_assoc())
     {
+        // $row['Password'] must match the exact case from your database column
         if(password_verify($password, $row['Password']))
         {
             $_SESSION['id'] = $row['StaffID'];
@@ -26,11 +27,13 @@ if(isset($_POST['login']))
             $_SESSION['role'] = $row['Role'];
 
             if($row['Role'] == "Admin")
-                header("Location: admin_dashboard.php");
+                header("Location: DashboardAdmin.php");
             elseif($row['Role'] == "Engineer")
-                header("Location: engineer_dashboard.php");
+                header("Location: DashboardEngineer.php");
+            elseif($row['Role'] == "Boss" || $row['Role'] == "Manager")
+                header("Location: BossDashboard.php");
             else
-                header("Location: boss_dashboard.php");
+                header("Location: BossDashboard.php");
 
             exit();
         }
@@ -41,6 +44,7 @@ if(isset($_POST['login']))
     /* =======================
        CLIENT LOGIN CHECK
     ======================== */
+    // Selects structural keys directly from your client_account schema mapping
     $stmt = $conn->prepare("SELECT ClientID, Username, Password FROM client_account WHERE Username = ?");
     $stmt->bind_param('s', $username);
     $stmt->execute();
@@ -48,12 +52,14 @@ if(isset($_POST['login']))
 
     if($row = $clientResult->fetch_assoc())
     {
+        // Validates hashed input against your VARCHAR(255) column
         if(password_verify($password, $row['Password']))
         {
-            $_SESSION['clientID'] = $row['ClientID'];
+            $_SESSION['clientID'] = $row['ClientID']; // Corrected to uppercase ID to match client views
             $_SESSION['username'] = $row['Username'];
+            $_SESSION['role'] = 'Client';             // Prevents security gate components from redirecting you out
 
-            header("Location: ClientDashboard.php");
+            header("Location: ClientDashboard.php");  // Routes to your custom client dashboard layout
             exit();
         }
     }
@@ -85,7 +91,7 @@ if(isset($_POST['login']))
         <h2>Login</h2>
 
         <?php if(!empty($message)): ?>
-            <div class="message">
+            <div class="message" style="color: red; font-weight: bold; margin-bottom: 15px;">
                 <?php echo $message; ?>
             </div>
         <?php endif; ?>
