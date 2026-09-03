@@ -9,6 +9,11 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Boss') {
 
 $message = "";
 
+$proposalSearch = "";
+if(isset($_GET['proposal_search'])) {
+    $proposalSearch = mysqli_real_escape_string($conn, $_GET['proposal_search']);
+}
+
 /* APPROVE PROPOSAL */
 if (isset($_POST['approve_project'])) {
     $projectID = mysqli_real_escape_string($conn, $_POST['project_id']);
@@ -86,6 +91,7 @@ body{
     width:220px;
     background:white;
     padding:30px 20px;
+    overflow-y:auto;
 }
 
 .sidebar h3{
@@ -102,9 +108,10 @@ body{
 .sidebar a{
     display:block;
     text-decoration:none;
-    color:#c7c7c7;
-    font-weight:bold;
-    margin-bottom:22px;
+    color:#d1d1d1;
+    font-size:1.15rem;
+    font-weight:800;
+    margin-bottom:45px;
     text-transform:uppercase;
 }
 
@@ -124,6 +131,23 @@ body{
     border-radius:35px;
     padding:35px;
     box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.reset{
+    background:#6c757d;
 }
 
 .card h2{
@@ -217,15 +241,13 @@ td{
 
 <div class="sidebar">
     <h3>Management Portal</h3>
-    <h2>Boss Control</h2>
+    <h2>Manager Control</h2>
 
-    <a href="BossDashboard.php">Boss Dashboard</a>
+    <a href="BossDashboard.php">Manager Dashboard</a>
     <a href="BossClientProposal.php" class="active">Client Proposals</a>
     <a href="BossAssignEngineer.php">Assign Engineers</a>
     <a href="BossEngineerReport.php">Engineer Reports</a>
-    <a href="BossViewPerformanceTracker.php">Performance Reports</a>
-    <a href="BossPerformanceTracker.php">Performance Tracker</a>
-</div>
+    <a href="BossViewPerformanceTracker.php">Performance Reports</a></div>
 
 <div class="content">
 
@@ -234,6 +256,12 @@ td{
 <h2>Client Project Proposals</h2>
 
 <?php echo $message; ?>
+
+<form method="GET" class="search-box">
+<input type="text" name="proposal_search" placeholder="Search by project name or location" value="<?php echo htmlspecialchars($proposalSearch); ?>">
+<button type="submit" class="btn view-btn">Search</button>
+<a href="BossClientProposal.php" class="btn reset">Reset</a>
+</form>
 
 <table>
 <tr>
@@ -255,6 +283,8 @@ $proposalQuery = mysqli_query($conn,
  FROM project p
  INNER JOIN client c
  ON p.ClientID = c.ClientID
+ WHERE p.ProjectName LIKE '%$proposalSearch%'
+ OR p.Place LIKE '%$proposalSearch%'
  ORDER BY p.ProjectID DESC");
 
 if(mysqli_num_rows($proposalQuery) > 0) {

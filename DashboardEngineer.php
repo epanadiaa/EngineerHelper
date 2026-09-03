@@ -97,6 +97,39 @@ AND p.EndDate IS NOT NULL
 AND p.EndDate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
 AND p.Status <> 'Completed'
 ORDER BY p.EndDate ASC");
+
+
+/* Pre-compute status counts for the pie chart, before any HTML renders */
+$chartOnTrack = 0;
+$chartDueSoon = 0;
+$chartDelayed = 0;
+$chartCompleted = 0;
+
+mysqli_data_seek($projects, 0);
+while($row = mysqli_fetch_assoc($projects)) {
+    $tempOverdue = false;
+    $tempDueSoon = false;
+
+    if(!empty($row['EndDate']) && $row['Status'] !== 'Completed') {
+        $tempDaysLeft = (strtotime($row['EndDate']) - strtotime(date('Y-m-d'))) / 86400;
+        if($tempDaysLeft < 0) {
+            $tempOverdue = true;
+        } elseif($tempDaysLeft <= 7) {
+            $tempDueSoon = true;
+        }
+    }
+
+    if($row['Status'] === 'Completed') {
+        $chartCompleted++;
+    } elseif($tempOverdue) {
+        $chartDelayed++;
+    } elseif($tempDueSoon) {
+        $chartDueSoon++;
+    } else {
+        $chartOnTrack++;
+    }
+}
+mysqli_data_seek($projects, 0);
 ?>
 
 <!DOCTYPE html>
@@ -398,30 +431,28 @@ td{
 <?php } ?>
 
 <div class="card">
-<h2>Engineer Dashboard Overview</h2>
-
-<div class="grid">
-<div class="stat-box">
-<h3>Total Assigned Projects</h3>
-<p><?php echo $totalProjects; ?></p>
+<h2>Project Status Breakdown</h2>
+<canvas id="statusPieChart" style="max-width:350px;margin:0 auto;display:block;"></canvas>
 </div>
 
-<div class="stat-box">
-<h3>Completed Projects</h3>
-<p><?php echo $completedProjects; ?></p>
-</div>
-
-<div class="stat-box">
-<h3>In Progress Projects</h3>
-<p><?php echo $inProgressProjects; ?></p>
-</div>
-
-<div class="stat-box">
-<h3>Total Hours Logged</h3>
-<p><?php echo number_format($totalHours,2); ?></p>
-</div>
-</div>
-</div>
+<script>
+new Chart(document.getElementById('statusPieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['On Track', 'Due Soon', 'Delayed', 'Completed'],
+        datasets: [{
+            data: [
+                <?php echo $chartOnTrack; ?>,
+                <?php echo $chartDueSoon; ?>,
+                <?php echo $chartDelayed; ?>,
+                <?php echo $chartCompleted; ?>
+            ],
+            backgroundColor: ['#007bff', '#ff9800', '#dc3545', '#6f42c1']
+        }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+</script>
 
 <div class="card">
 <h2>Project Progress Chart</h2>
@@ -455,11 +486,6 @@ while($row = mysqli_fetch_assoc($projects)) {
 </tr>
 
 <?php
-$chartOnTrack = 0;
-$chartDueSoon = 0;
-$chartDelayed = 0;
-$chartCompleted = 0;
-
 mysqli_data_seek($projects, 0);
 while($row = mysqli_fetch_assoc($projects)) {
 
@@ -474,6 +500,7 @@ while($row = mysqli_fetch_assoc($projects)) {
         }
     }
 
+    // Auto-tracking flag: derived from EndDate + latest progress, never stored back to Status
     $isOverdue = false;
     $isDueSoon = false;
 
@@ -484,16 +511,6 @@ while($row = mysqli_fetch_assoc($projects)) {
         } elseif($daysLeft <= 7) {
             $isDueSoon = true;
         }
-    }
-
-    if($row['Status'] === 'Completed') {
-        $chartCompleted++;
-    } elseif($isOverdue) {
-        $chartDelayed++;
-    } elseif($isDueSoon) {
-        $chartDueSoon++;
-    } else {
-        $chartOnTrack++;
     }
 ?>
 
@@ -507,23 +524,6 @@ while($row = mysqli_fetch_assoc($projects)) {
 </td>
 
 <td><?php echo $row['LatestProgress']; ?>%</td>
-<td><?php echo number_format($row['TotalHours'],2); ?> hour(s)</td>
-
-<td>
-<?php if($isOverdue) { ?>
-<span class="badge delayed">DELAYED</span>
-<?php } elseif($isDueSoon) { ?>
-<span class="badge duesoon">DUE SOON</span>
-<?php } elseif($isNew) { ?>
-<span class="badge new">NEW</span>
-<?php } else { echo "-"; } ?>
-</td>
-</tr>
-
-<?php } ?>
-
-</table>
-</div>
 
 <div class="card">
 <h2>Project Status Breakdown</h2>
@@ -543,14 +543,6 @@ new Chart(document.getElementById('statusPieChart'), {
     options: { plugins: { legend: { position: 'bottom' } } }
 });
 </script>
-
-</main>
-</div>
-
-<?php if(count($newProjectNames) > 0) { ?>
-<div class="modal" id="newProjectModal">
-<h3>New Project Assigned</h3>
-<p>You have new assigned project(s):</p>
 
 <ul>
 <?php foreach($newProjectNames as $projectName) { ?>

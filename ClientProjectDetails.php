@@ -18,12 +18,13 @@ if (isset($_POST['createProject'])) {
     $endDate = $_POST['endDate'];
 
     $minimumStartDate = date('Y-m-d', strtotime('+1 month'));
+    
 
     if ($startDate < $minimumStartDate) {
         $message = "Start Date must be at least 1 month after proposal submission.";
     }
-    elseif ($startDate > $endDate) {
-        $message = "Start Date cannot be later than End Date.";
+        $duration = (int)$_POST['duration'];
+        $durationUnit = $_POST['durationUnit'];
     }
     else {
         $proposalFileName = "";

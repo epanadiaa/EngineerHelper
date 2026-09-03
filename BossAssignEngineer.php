@@ -9,6 +9,11 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'Boss') {
 
 $message = "";
 
+$assignSearch = "";
+if(isset($_GET['assign_search'])) {
+    $assignSearch = mysqli_real_escape_string($conn, $_GET['assign_search']);
+}
+
 if (isset($_POST['assign_project'])) {
 
     $projectID = mysqli_real_escape_string($conn, $_POST['project_id']);
@@ -87,6 +92,7 @@ body{
     width:220px;
     background:white;
     padding:30px 20px;
+    overflow-y:auto;
 }
 
 .sidebar h3{
@@ -103,9 +109,10 @@ body{
 .sidebar a{
     display:block;
     text-decoration:none;
-    color:#c7c7c7;
-    font-weight:bold;
-    margin-bottom:22px;
+    color:#d1d1d1;
+    font-size:1.15rem;
+    font-weight:800;
+    margin-bottom:45px;
     text-transform:uppercase;
 }
 
@@ -161,6 +168,24 @@ select{
     font-weight:bold;
     cursor:pointer;
     text-decoration:none;
+}
+
+.search-box{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.search-box input{
+    flex:1;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.reset{
+    background:#6c757d;
 }
 
 table{
@@ -225,15 +250,13 @@ td{
 
 <div class="sidebar">
     <h3>Management Portal</h3>
-    <h2>Boss Control</h2>
+    <h2>Manager Control</h2>
 
-    <a href="BossDashboard.php">Boss Dashboard</a>
+    <a href="BossDashboard.php">Manager Dashboard</a>
     <a href="BossClientProposal.php">Client Proposals</a>
     <a href="BossAssignEngineer.php" class="active">Assign Engineers</a>
     <a href="BossEngineerReport.php">Engineer Reports</a>
-    <a href="BossViewPerformanceTracker.php">Performance Reports</a>
-    <a href="BossPerformanceTracker.php">Performance Tracker</a>
-</div>
+    <a href="BossViewPerformanceTracker.php">Performance Reports</a></div>
 
 <div class="content">
 
@@ -297,6 +320,12 @@ Confirm Assignment
 <div class="card">
 <h2>Current Project Assignments</h2>
 
+<form method="GET" class="search-box">
+<input type="text" name="assign_search" placeholder="Search by engineer name or project name" value="<?php echo htmlspecialchars($assignSearch); ?>">
+<button type="submit" class="btn">Search</button>
+<a href="BossAssignEngineer.php" class="btn reset">Reset</a>
+</form>
+
 <table>
 <tr>
 <th>Project ID</th>
@@ -319,8 +348,11 @@ $assignmentQuery = mysqli_query($conn,
  ON p.ClientID = c.ClientID
  LEFT JOIN staff s
  ON p.StaffID = s.StaffID
+ WHERE p.ProjectName LIKE '%$assignSearch%'
+ OR s.Username LIKE '%$assignSearch%'
  ORDER BY p.ProjectID DESC");
 
+if(mysqli_num_rows($assignmentQuery) > 0) {
 while($row = mysqli_fetch_assoc($assignmentQuery)) {
 
     $status = $row['Status'];
@@ -354,7 +386,10 @@ if($row['Username']) {
 </td>
 </tr>
 
-<?php } ?>
+<?php }
+} else {
+    echo "<tr><td colspan='5' style='text-align:center;'>No matching project or engineer found.</td></tr>";
+} ?>
 
 </table>
 </div>

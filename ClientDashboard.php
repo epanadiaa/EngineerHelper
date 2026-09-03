@@ -251,37 +251,37 @@ Engineer Helper
 
 <li>
 <a href="ClientDashboard.php">
- Dashboard
+🏠 Dashboard
 </a>
 </li>
 
 <li>
 <a href="ClientProjectDetails.php">
- Project Details
+Project Details
 </a>
 </li>
 
 <li>
 <a href="ClientUploadBOQ.php">
- Upload BOQ
+Upload BOQ
 </a>
 </li>
 
 <li>
 <a href="ClientDownloadReport.php">
- Download Report
+Download Report
 </a>
 </li>
 
 <li>
 <a href="ClientProfile.php">
- Profile
+Profile
 </a>
 </li>
 
 <li>
 <a href="LogOut.php">
- Logout
+Logout
 </a>
 </li>
 

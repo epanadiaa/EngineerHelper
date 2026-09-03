@@ -41,6 +41,7 @@ $totalEngineers = mysqli_fetch_assoc(mysqli_query($conn,
 <html>
 <head>
 <title>Boss Performance Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
@@ -98,9 +99,10 @@ body{
 .sidebar a{
     display:block;
     text-decoration:none;
-    color:#c7c7c7;
-    font-weight:bold;
-    margin-bottom:22px;
+    color:#d1d1d1;
+    font-size:1.15rem;
+    font-weight:800;
+    margin-bottom:45px;
     text-transform:uppercase;
 }
 
@@ -227,14 +229,14 @@ td{
 <div class="layout">
 
 <div class="sidebar">
-    <h2>Management Portal</h2>
+    <h3>Management Portal</h3>
+    <h2>Manager Control</h2>
 
-    <a href="BossDashboard.php">Dashboard</a>
+    <a href="BossDashboard.php">Manager Dashboard</a>
     <a href="BossClientProposal.php">Client Proposals</a>
     <a href="BossAssignEngineer.php">Assign Engineers</a>
     <a href="BossEngineerReport.php">Engineer Reports</a>
     <a href="BossViewPerformanceTracker.php" class="active">Performance Reports</a>
-    <a href="BossPerformanceTracker.php">Performance Tracker</a>
 </div>
 
 <div class="content">
@@ -273,7 +275,7 @@ td{
 <form method="GET" class="search-box">
 <input type="text" name="search" placeholder="Search engineer name" value="<?php echo htmlspecialchars($search); ?>">
 <button type="submit" class="btn">Search</button>
-<a href="BossPerformanceTracker.php" class="btn reset">Reset</a>
+<a href="BossViewPerformanceTracker.php" class="btn reset">Reset</a>
 </form>
 
 <table>
@@ -299,8 +301,14 @@ $engineerReport = mysqli_query($conn,
  GROUP BY s.StaffID, s.Username
  ORDER BY TotalHours DESC");
 
+$chartLabels = [];
+$chartHours = [];
+
 if(mysqli_num_rows($engineerReport) > 0) {
     while($row = mysqli_fetch_assoc($engineerReport)) {
+
+        $chartLabels[] = $row['Username'];
+        $chartHours[] = (float)$row['TotalHours'];
 ?>
 
 <tr>
@@ -318,6 +326,29 @@ if(mysqli_num_rows($engineerReport) > 0) {
 
 </table>
 </div>
+
+<div class="card">
+<h2>Engineer Hours Distribution</h2>
+<canvas id="engineerHoursPie" style="max-width:400px;margin:0 auto;display:block;"></canvas>
+</div>
+
+<script>
+new Chart(document.getElementById('engineerHoursPie'), {
+    type: 'pie',
+    data: {
+        labels: <?php echo json_encode($chartLabels); ?>,
+        datasets: [{
+            data: <?php echo json_encode($chartHours); ?>,
+            backgroundColor: ['#004aad', '#28a745', '#ff9800', '#dc3545', '#6f42c1', '#17a2b8', '#e83e8c', '#20c997']
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
 
 <div class="card">
 <h2>Total Hours by Project by Month</h2>
